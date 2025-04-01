@@ -12,7 +12,7 @@
   
   典型例子就是不同分辨率信息的ass字幕中，如果字体大小一致，会导致字体在屏幕中显示大小会不同，因为字体大小在显示器上展示的效果要根据字幕的分辨率信息的来决定，可能大小为70的字体在1920与1080的分辨率信息的字幕中，显示比较正常，但是如果在1280与720的分辨率信息的字幕中，如果要显示同样“大小”，就需要把字体大小调小，比如42等。
   
-- **字幕轨道：**视频中的轨道信息指的是mkv、mp4等视频中，往往有多个轨道，分别指的是图像、音频、字幕（主要是mkv）等， 这也是[MKVToolNix](https://mkvtoolnix.download/)和本软件提取字幕的核心根据。查看字幕的轨道信息可以用[MKVToolNix](https://mkvtoolnix.download/)来查看，一般而言，在大部分的中日双语、简繁、简体等动漫上，简体字幕的轨道ID为2，繁体字幕的轨道ID为3，故而本软件在字幕轨道上是默认设置为2，不过也有特殊例子，比如比如悠哉日常大王第二季繁日字幕版本中，繁体字幕轨道就是0，无简体字幕轨道，会导致软件提取字幕失败。所以如果提取字幕失败，建议用[MKVToolNix](https://mkvtoolnix.download/)查看字幕具体的轨道信息，然后在本软件中调整字幕轨道ID即可。
+- **字幕轨道：** 视频中的轨道信息指的是mkv、mp4等视频中，往往有多个轨道，分别指的是图像、音频、字幕（主要是mkv）等， 这也是[MKVToolNix](https://mkvtoolnix.download/)和本软件提取字幕的核心根据。查看字幕的轨道信息可以用[MKVToolNix](https://mkvtoolnix.download/)来查看，一般而言，在大部分的中日双语、简繁、简体等动漫上，简体字幕的轨道ID为2，繁体字幕的轨道ID为3，故而本软件在字幕轨道上是默认设置为2，不过也有特殊例子，比如比如悠哉日常大王第二季繁日字幕版本中，繁体字幕轨道就是0，无简体字幕轨道，会导致软件提取字幕失败。所以如果提取字幕失败，建议用[MKVToolNix](https://mkvtoolnix.download/)查看字幕具体的轨道信息，然后在本软件中调整字幕轨道ID即可。
 
 - **ASS字幕样式：** 在一般的ass文件中，均有[Script Info]、[V4+ Styles]和[Events]三大要素：
 
@@ -20,7 +20,7 @@
   2. 在[V4+ Styles]，就是字体样式定义，主要有样式名字（在后续的Events中用上）、字体名称、字体大小、字体颜色等不少样式。
   3. [Events]，这地方主要放字幕文本，其中有上述的样式名字，就是可以根据样式名字所对应的字体样式不同，从而让相应的文本显示不同的样式。
 
-  **style样式：**mkv视频中ass字幕显示中，这部分样式的设定至关重要。style样式定义有：
+  **style样式：** mkv视频中ass字幕显示中，这部分样式的设定至关重要。style样式定义有：
 
   ```css
   Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
