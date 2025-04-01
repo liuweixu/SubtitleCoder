@@ -223,7 +223,7 @@ class ExtractorWorker(QObject):
             
             # 使用mkvextract提取字幕轨道
             command = ["mkvextract", "tracks", mkv_path, f"{self.track_id}:{temp_sub}"]
-            subprocess.run(command, check=True, stderr=subprocess.DEVNULL)
+            subprocess.run(command, check=True, stderr=subprocess.DEVNULL, creationflags=subprocess.CREATE_NO_WINDOW) # 不显示控制器
             
             # 检测提取的字幕格式
             sub_format = self.detect_subtitle_format(temp_sub)
@@ -247,12 +247,17 @@ class ExtractorWorker(QObject):
             # 处理字幕文件
             if sub_format == 'ass':
                 success = self.process_ass(temp_sub, None if self._read_only_mode else final_output)
-            else:  # SRT格式直接重命名
+            else:  # SRT格式处理
                 try:
                     if not self._read_only_mode:
+                        # 先删除已存在的文件（如果存在）
+                        if os.path.exists(final_output):
+                            os.remove(final_output)
+                        # 然后移动临时文件到目标位置
                         os.rename(temp_sub, final_output)
                     success = True
-                except:
+                except Exception as e:
+                    self.log_message.emit(f"SRT文件处理错误: {str(e)}")
                     success = False
             
             if success:
@@ -273,52 +278,6 @@ class ExtractorWorker(QObject):
             # 清理临时目录
             if os.path.exists(temp_dir):
                 rmtree(temp_dir)
-
-    # def process_external_ass(self, ass_path):
-    #     """
-    #     处理独立的ASS字幕文件
-    #     :param ass_path: ASS文件路径
-    #     """
-    #     current_suffix = "CHS" if self.language == 'chs' else "JP"
-
-    #     base_name = os.path.basename(ass_path)
-    #     base, ext = os.path.splitext(base_name)
-
-    #     # 分析文件名中的现有后缀
-    #     parts = base.split('.')
-    #     existing_suffix = parts[-1].upper() if len(parts) > 1 else None
-
-    #     # 确定最终文件名
-    #     if existing_suffix and existing_suffix in ['CHS', 'JP']:
-    #         print(existing_suffix == current_suffix)
-    #         # 如果已有语言后缀，检查是否需要更新
-    #         if existing_suffix != current_suffix:
-    #             # 替换后缀
-    #             parts[-1] = current_suffix
-    #             new_base = '.'.join(parts)
-    #             final_output = os.path.join(self.output_dir, f"{new_base}.ass")
-    #         else:
-    #             # 后缀相同，直接使用原文件名+后缀
-    #             final_output = os.path.join(self.output_dir, f"{base}.{current_suffix}.ass")
-    #     else:
-    #         # 没有语言后缀，添加新后缀
-    #         final_output = os.path.join(self.output_dir, f"{base}.{current_suffix}.ass")
-        
-    #     try:
-    #         file_existed = False if self._read_only_mode else os.path.exists(final_output)
-            
-    #         if self.process_ass(ass_path, final_output):
-    #             if self._read_only_mode:
-    #                 self.log_message.emit(f"✓ 已读取分辨率: {base_name}")
-    #             elif file_existed:
-    #                 self.log_message.emit(f"▶ 覆盖：{base_name}")
-    #             else:
-    #                 self.log_message.emit(f"✓ 成功：{base_name}")
-    #         else:
-    #             self.log_message.emit(f"× 失败：{base_name}（字幕处理错误）")
-                
-    #     except Exception as e:
-    #         self.log_message.emit(f"× 失败：{base_name}（{str(e)}）")
 
     def process_external_ass(self, ass_path):
         """
