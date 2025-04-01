@@ -105,7 +105,7 @@ class SubtitleConverterTab(QWidget):
         colors = [
             ("PrimaryColour:", "&H00FFFFFF", self.show_color_dialog),
             ("SecondaryColour:", "&H000000FF", self.show_color_dialog),
-            ("OutlineColour:", "&H005051E0", self.show_color_dialog),
+            ("OutlineColour:", "&H00705E5B", self.show_color_dialog),
             ("BackColour:", "&H00000000", self.show_color_dialog)
         ]
         
