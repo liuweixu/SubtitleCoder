@@ -197,8 +197,8 @@ class SubtitleExtractorTab(QWidget):
             
         try:
             track_id = int(self.track_id_edit.text()) if self.track_id_edit.text() else 2
-            if track_id < 1:
-                raise ValueError("轨道ID必须大于0")
+            if track_id < 0:
+                raise ValueError("轨道ID必须大于等于0")
         except ValueError:
             QMessageBox.warning(self, "输入错误", "轨道ID必须是大于0的整数！")
             return
