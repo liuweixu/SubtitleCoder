@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-and-release:
-    runs-on: windows-latest  # 修正：windows-latest（不是window-latest）
+    runs-on: windows-latest 
     steps:
       - uses: actions/checkout@v4
       
@@ -20,7 +20,7 @@ jobs:
           pip install pyinstaller
           
       - name: Build executable
-        run: pyinstaller --noconsole main.py  # 建议添加--onefile和--noconsole
+        run: pyinstaller --noconsole main.py  
         
       - name: Zip artifacts
         run: Compress-Archive -Path dist\* -DestinationPath subtitlecoder.zip  # Windows系统用PowerShell命令
