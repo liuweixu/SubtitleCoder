@@ -106,7 +106,7 @@ class ExtractorWorker(QObject):
                 
                 style_name = parts[3].strip()
                 # 添加特例：1. 悠哉日常大王第二季繁体版 2. 再见龙生，您好人生猎户压制组版本
-                is_japanese = 'JP' in style_name.upper() or 'JAP' in style_name.upper() or '少女日常日文' in style_name \
+                is_japanese = 'JP' in style_name.upper() or 'JA' in style_name.upper() or '少女日常日文' in style_name \
                             or '日文歌詞方案' in style_name or '正 文 日' in style_name
                 
                 # 根据语言选择决定保留哪些行

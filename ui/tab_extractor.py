@@ -150,7 +150,7 @@ class SubtitleExtractorTab(QWidget):
     def clear_log(self):
         """清空日志区域"""
         self.log_area.clear()
-        self.log_message("日志已清空")  # 可选：添加一条清空确认日志
+        self.log_message("日志已清空")  # 添加一条清空确认日志
 
     def select_input_dir(self):
         dir_path = QFileDialog.getExistingDirectory(self, "选择输入文件夹")
@@ -200,7 +200,7 @@ class SubtitleExtractorTab(QWidget):
             if track_id < 0:
                 raise ValueError("轨道ID必须大于等于0")
         except ValueError:
-            QMessageBox.warning(self, "输入错误", "轨道ID必须是大于0的整数！")
+            QMessageBox.warning(self, "输入错误", "轨道ID必须是大于等于0的整数！")
             return
 
         adjust_str = self.size_adjust_edit.text().strip()
