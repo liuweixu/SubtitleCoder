@@ -23,7 +23,7 @@ jobs:
         run: pyinstaller --noconsole main.py  
         
       - name: Zip artifacts
-        run: Compress-Archive -Path dist\* -DestinationPath subtitlecoder.zip  # Windows系统用PowerShell命令
+        run: Compress-Archive -Path dist\subtitlecoder -DestinationPath dist\subtitlecoder.zip  # Windows系统用PowerShell命令
         
       - name: Upload release
         uses: softprops/action-gh-release@v1
