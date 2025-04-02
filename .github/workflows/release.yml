@@ -1,0 +1,32 @@
+name: Release
+on:
+  push:
+    tags: 
+      - 'v*'  # 触发条件：推送标签时（如 v1.0.0）
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest  # 修正：windows-latest（不是window-latest）
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: Install dependencies
+        run: |
+          pip install pyinstaller
+          
+      - name: Build executable
+        run: pyinstaller --noconsole main.py 
+        
+      - name: Zip artifacts
+        run: Compress-Archive -Path dist\* -DestinationPath subtitlecoder.zip  # Windows系统用PowerShell命令
+        
+      - name: Upload release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: subtitlecoder.zip
+          draft: false 
