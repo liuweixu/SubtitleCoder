@@ -28,5 +28,5 @@ jobs:
       - name: Upload release
         uses: softprops/action-gh-release@v1
         with:
-          files: subtitlecoder.zip
+          files: dist\subtitlecoder.zip
           draft: false  # 直接发布，非草稿
