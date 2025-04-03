@@ -103,7 +103,7 @@ class SubtitleConverterTab(QWidget):
         
         # 颜色设置
         colors = [
-            ("PrimaryColour:", "&H00FFFFFF", self.show_color_dialog),
+            ("PrimaryColour:", "&H00FFFFFF", self.show_color_dialog),  
             ("SecondaryColour:", "&H000000FF", self.show_color_dialog),
             ("OutlineColour:", "&H00705E5B", self.show_color_dialog),
             ("BackColour:", "&H00000000", self.show_color_dialog)
@@ -187,11 +187,11 @@ class SubtitleConverterTab(QWidget):
         # 重置字体大小
         self.font_size_spin.setValue(70)
         
-        # 重置颜色按钮
+        # 重置颜色按钮  
         default_colors = [
             "&H00FFFFFF",  # PrimaryColour
             "&H000000FF",  # SecondaryColour
-            "&H005051E0",  # OutlineColour
+            "&H00705E5B",  # OutlineColour
             "&H00000000"   # BackColour
         ]
         for btn, color in zip(self.color_btns, default_colors):
