@@ -3,7 +3,8 @@ import re
 from datetime import datetime
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
                               QPushButton, QTextEdit, QFileDialog, QMessageBox,
-                              QGroupBox, QSpinBox, QColorDialog, QFontComboBox)
+                              QGroupBox, QSpinBox, QColorDialog, QFontComboBox, 
+                              QScrollArea, QButtonGroup, QCheckBox, QSizePolicy)
 from PySide6.QtCore import Qt, Signal, QObject
 from PySide6.QtGui import QColor, QFontDatabase
 from utils.styles import DEFAULT_STYLE
@@ -17,7 +18,11 @@ class SubtitleConverterTab(QWidget):
         self.current_play_res_y = 1080
         self.current_font_size = 70
         self.resolution_extractor = ResolutionExtractor()
+        self.suffix_checkboxes = []  # 存储后缀选择复选框
+        self.suffix_button_group = QButtonGroup(self)  # 用于管理复选框组
+        self.suffix_button_group.setExclusive(False)  # 允许多选
         self.init_ui()
+
 
     def init_ui(self):
         layout = QVBoxLayout(self)
@@ -101,7 +106,7 @@ class SubtitleConverterTab(QWidget):
         font_size_layout.addWidget(calc_font_btn)
         params_layout.addLayout(font_size_layout)
         
-        # 颜色设置
+        # 颜色设置 &H00FFFFFF,&H000000FF,&H00705E5B,&H00000000
         colors = [
             ("PrimaryColour:", "&H00FFFFFF", self.show_color_dialog),  
             ("SecondaryColour:", "&H000000FF", self.show_color_dialog),
@@ -149,10 +154,50 @@ class SubtitleConverterTab(QWidget):
         self.log_area = QTextEdit()
         self.log_area.setReadOnly(True)
         self.log_area.setPlaceholderText("转换日志将显示在这里...")
+
+
+        # 在原有控制按钮布局前添加后缀选择区域
+        self.suffix_group = QGroupBox("选择要转换的后缀")
+        suffix_layout = QVBoxLayout()
         
+        # 添加一个滚动区域，以防后缀太多
+        scroll_area = QScrollArea()
+
+        scroll_area.setMinimumHeight(150)  # 设置最小高度为150像素
+        scroll_area.setMaximumHeight(250)  # 设置最大高度为250像素
+        scroll_area.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        scroll_content = QWidget()
+        scroll_layout = QVBoxLayout(scroll_content)
+        
+        # 这里会在扫描目录时动态添加复选框
+        self.suffix_container = QWidget()
+        self.suffix_container_layout = QVBoxLayout(self.suffix_container)
+        scroll_layout.addWidget(self.suffix_container)
+        
+        # 全选/取消全选按钮
+        btn_layout = QHBoxLayout()
+        select_all_btn = QPushButton("全选")
+        select_all_btn.clicked.connect(self.select_all_suffixes)
+        btn_layout.addWidget(select_all_btn)
+        
+        deselect_all_btn = QPushButton("取消全选")
+        deselect_all_btn.clicked.connect(self.deselect_all_suffixes)
+        btn_layout.addWidget(deselect_all_btn)
+        
+        scan_suffixes_btn = QPushButton("重新扫描后缀")
+        scan_suffixes_btn.clicked.connect(self.scan_suffixes)
+        btn_layout.addWidget(scan_suffixes_btn)
+        
+        scroll_layout.addLayout(btn_layout)
+        scroll_area.setWidget(scroll_content)
+        scroll_area.setWidgetResizable(True)
+        suffix_layout.addWidget(scroll_area)
+        self.suffix_group.setLayout(suffix_layout)
+
         # 布局组装
         layout.addLayout(input_layout)
         layout.addLayout(output_layout)
+        layout.addWidget(self.suffix_group)
         layout.addWidget(resolution_group)
         layout.addWidget(style_group)
         layout.addLayout(button_layout)
@@ -408,17 +453,47 @@ class SubtitleConverterTab(QWidget):
             f.write('\n'.join(ass_content))
 
     def start_conversion(self):
-        """开始转换"""
+        """开始转换（修改后的版本，支持后缀筛选）"""
         if not self.validate_paths():
             return
+        
+        # 扫描后缀（如果尚未扫描）
+        if not self.suffix_checkboxes:
+            self.scan_suffixes()
+            # 如果没有找到带后缀的文件，转换所有文件
+            if any(not isinstance(cb, QCheckBox) for cb in self.suffix_checkboxes):
+                if QMessageBox.question(self, "确认", 
+                                    "未找到带后缀的SRT文件，是否转换所有SRT文件？",
+                                    QMessageBox.Yes | QMessageBox.No) != QMessageBox.Yes:
+                    return
+                # 设置标志表示转换所有文件
+                convert_all = True
+            else:
+                convert_all = False
+        else:
+            # 已经有复选框，检查是否选择了任何后缀
+            selected_suffixes = self.get_selected_suffixes()
+            if selected_suffixes:
+                convert_all = False
+                suffix_info = f"选中的后缀: {', '.join(selected_suffixes)}"
+            else:
+                # 用户明确取消了所有选择，不转换任何文件
+                QMessageBox.information(self, "信息", "没有选择任何后缀，将不转换任何文件")
+                return
         
         self.overwrite_mode = None
         input_dir = self.input_edit.text()
         output_dir = self.output_edit.text()
         
+        if convert_all:
+            suffix_info = "将转换所有SRT文件"
+        elif selected_suffixes:
+            suffix_info = f"选中的后缀: {', '.join(selected_suffixes)}"
+        
         self.log("=== 开始转换 ===")
         self.log(f"输入目录: {input_dir}")
         self.log(f"输出目录: {output_dir}")
+        self.log(suffix_info)
         self.log(f"分辨率: {self.res_x_spin.value()}x{self.res_y_spin.value()}")
         self.log(f"使用字体: {self.font_combo.currentText()}")
         
@@ -430,6 +505,16 @@ class SubtitleConverterTab(QWidget):
             for filename in os.listdir(input_dir):
                 if not filename.lower().endswith(".srt"):
                     continue
+                
+                # 检查后缀筛选（除非convert_all为True）
+                if not convert_all:
+                    parts = filename.split('.')
+                    if len(parts) >= 3:  # xx.AA.srt格式
+                        current_suffix = parts[-2]
+                        if current_suffix not in selected_suffixes:
+                            continue
+                    else:  # 不符合xx.AA.srt格式的文件
+                        continue
                 
                 srt_path = os.path.join(input_dir, filename)
                 ass_filename = f"{os.path.splitext(filename)[0]}.ass"
@@ -494,3 +579,65 @@ class SubtitleConverterTab(QWidget):
             return False
         if clicked == btn_cancel:
             raise InterruptedError("用户取消操作")
+
+
+    def scan_suffixes(self):
+        """扫描输入目录中的SRT文件后缀（取.分隔的倒数第二部分）"""
+        input_dir = self.input_edit.text()
+        if not os.path.isdir(input_dir):
+            QMessageBox.warning(self, "警告", "请输入有效的输入目录")
+            return
+        
+        # 清空现有复选框
+        for checkbox in self.suffix_checkboxes:
+            checkbox.deleteLater()
+        self.suffix_checkboxes = []
+        
+        # 查找所有SRT文件并提取后缀
+        suffixes = set()
+        for filename in os.listdir(input_dir):
+            if filename.lower().endswith('.srt'):
+                # 按点分割文件名，取倒数第二部分作为后缀
+                parts = filename.split('.')
+                if len(parts) >= 3:  # 至少有两个点（如 xx.AA.srt）
+                    suffix = parts[-2]  # 取倒数第二部分
+                    suffixes.add(suffix)  # 保持原始大小写
+        
+        if not suffixes:
+            # 如果没有找到带后缀的文件，显示一个提示
+            label = QLabel("未找到符合格式的SRT文件（格式应为*.AA.srt）")
+            self.suffix_container_layout.addWidget(label)
+            self.suffix_checkboxes.append(label)
+            return
+        
+        # 按字母顺序排序后缀（保持大小写）
+        sorted_suffixes = sorted(suffixes, key=lambda x: x.lower())
+        
+        # 为每个后缀创建复选框
+        for suffix in sorted_suffixes:
+            checkbox = QCheckBox(suffix)
+            checkbox.setChecked(True)  # 默认选中
+            self.suffix_container_layout.addWidget(checkbox)
+            self.suffix_checkboxes.append(checkbox)
+        
+        self.log(f"扫描到 {len(sorted_suffixes)} 个后缀: {', '.join(sorted_suffixes)}")
+
+    def select_all_suffixes(self):
+        """选中所有后缀复选框"""
+        for checkbox in self.suffix_checkboxes:
+            if isinstance(checkbox, QCheckBox):
+                checkbox.setChecked(True)
+
+    def deselect_all_suffixes(self):
+        """取消选中所有后缀复选框"""
+        for checkbox in self.suffix_checkboxes:
+            if isinstance(checkbox, QCheckBox):
+                checkbox.setChecked(False)
+
+    def get_selected_suffixes(self):
+        """获取用户选择的后缀列表"""
+        selected = []
+        for checkbox in self.suffix_checkboxes:
+            if isinstance(checkbox, QCheckBox) and checkbox.isChecked():
+                selected.append(checkbox.text())
+        return selected
