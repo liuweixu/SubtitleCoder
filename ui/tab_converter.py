@@ -77,6 +77,13 @@ class SubtitleConverterTab(QWidget):
         # 样式参数编辑
         self.style_params_group = QGroupBox("样式参数")
         params_layout = QVBoxLayout()
+
+        # 添加样式名称编辑框
+        style_name_layout = QHBoxLayout()
+        style_name_layout.addWidget(QLabel("样式名称:"))
+        self.style_name_edit = QLineEdit("Dial_JP")
+        style_name_layout.addWidget(self.style_name_edit)
+        params_layout.addLayout(style_name_layout)
         
         # 字体名称 - 使用下拉框
         font_name_layout = QHBoxLayout()
@@ -184,7 +191,7 @@ class SubtitleConverterTab(QWidget):
         deselect_all_btn.clicked.connect(self.deselect_all_suffixes)
         btn_layout.addWidget(deselect_all_btn)
         
-        scan_suffixes_btn = QPushButton("重新扫描后缀")
+        scan_suffixes_btn = QPushButton("扫描后缀")
         scan_suffixes_btn.clicked.connect(self.scan_suffixes)
         btn_layout.addWidget(scan_suffixes_btn)
         
@@ -298,6 +305,10 @@ class SubtitleConverterTab(QWidget):
         if len(parts) < 5:
             return
         
+        # 设置样式名称
+        style_name = parts[0][7:].strip()  # 提取"Style: "之后的部分
+        self.style_name_edit.setText(style_name)
+
         # 设置字体名称
         font_name = parts[1].strip()
         font_db = QFontDatabase()
@@ -340,13 +351,14 @@ class SubtitleConverterTab(QWidget):
                 parts = ["Style: Dial_JP"] + [""]*17  # 作为最后的回退
         
         # 获取用户当前选择的参数
+        style_name = self.style_name_edit.text().strip() or "Dial_JP"
         font_name = self.font_combo.currentText()
         font_size = str(self.font_size_spin.value())
         colors = [btn.text() for btn in self.color_btns]
         
         # 只更新指定的6个参数，其他参数保持不变
         new_parts = [
-            parts[0],  # 保持Style名称不变
+            f"Style: {style_name}",  # 使用自定义样式名称
             font_name,  # 更新字体名称
             font_size,  # 更新字体大小
             *colors,    # 更新4个颜色参数
@@ -356,7 +368,7 @@ class SubtitleConverterTab(QWidget):
         # 重新组合为样式字符串
         new_style = ",".join(new_parts)
         self.style_edit.setPlainText(new_style)
-        self.log(f"样式定义已更新，使用字体: {font_name}")
+        self.log(f"样式定义已更新")
 
     def show_color_dialog(self):
         """显示颜色选择对话框"""
@@ -412,6 +424,12 @@ class SubtitleConverterTab(QWidget):
         play_res_y = self.res_y_spin.value()
         style = self.style_edit.toPlainText().strip() or DEFAULT_STYLE
         
+        # 从样式定义中提取样式名称
+        style_name = "Dial_JP"  # 默认值
+        if style.startswith("Style: "):
+            parts = style.split(",")
+            style_name = parts[0][7:].strip()  # 提取"Style: "之后的部分
+
         ass_content = [
             "[Script Info]",
             "ScriptType: v4.00+",
@@ -447,7 +465,8 @@ class SubtitleConverterTab(QWidget):
             end = datetime.strptime(match[2], "%H:%M:%S,%f").strftime("%H:%M:%S.%f")[:-4]
             text = r"\N".join(lines[2:]).strip()
             
-            ass_content.append(f"Dialogue: 0,{start},{end},Dial_JP,,0,0,0,,{text}")
+            # ass_content.append(f"Dialogue: 0,{start},{end},Dial_JP,,0,0,0,,{text}")
+            ass_content.append(f"Dialogue: 0,{start},{end},{style_name},,0,0,0,,{text}")
         
         with open(ass_path, 'w', encoding='utf_8_sig') as f:
             f.write('\n'.join(ass_content))
