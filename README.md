@@ -111,6 +111,9 @@
 
 如果大家使用过程中有反馈，可以通过Issue反馈，或者发邮件给wei_xu_liu@163.com反馈，十分感谢。
 
+# 未来修改计划
+- [ ] 新增对ass文件的样式修改的模块 
+
 # 致谢
 
 - [MKVToolNix](https://mkvtoolnix.download/) （灵感源泉之一）
