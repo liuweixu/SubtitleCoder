@@ -114,7 +114,7 @@
 # 未来修改计划
 - [ ] 新增对ass文件的样式修改的模块 
 - [ ] 尝试新增英语等其他语言的处理模块
-- [ ] 完善字体下拉框的逻辑
+- [ ] 完善字体下拉框的逻辑（**BUG:** Potplayer上，FOT-Humming ProN不能识别，而FOT-Humming ProN E和FOT-Humming ProN B能识别，而字体下拉框只能显示FOT-Humming ProN，不符合逻辑）
 
 # 致谢
 
