@@ -91,9 +91,9 @@ class SubtitleConverterTab(QWidget):
         self.font_combo = QFontComboBox()
         # 设置默认字体
         font_db = QFontDatabase()
-        default_font = "FOT-Humming ProN"  # 默认字体
-        if "FOT-Humming ProN" in font_db.families():
-            default_font = "FOT-Humming ProN"
+        default_font = "FOT-Humming ProN E"  # 默认字体
+        if "Humming" in font_db.families():
+            default_font = "FOT-Humming ProN E"
         elif "Microsoft YaHei" in font_db.families():
             default_font = "Microsoft YaHei"
         self.font_combo.setCurrentText(default_font)
@@ -229,8 +229,8 @@ class SubtitleConverterTab(QWidget):
         """将样式参数重置为默认值"""
         # 重置字体选择
         font_db = QFontDatabase()
-        if "FOT-Humming ProN" in font_db.families():
-            self.font_combo.setCurrentText("FOT-Humming ProN")
+        if "FOT-Humming ProN E" in font_db.families():
+            self.font_combo.setCurrentText("FOT-Humming ProN E")
         elif "Microsoft YaHei" in font_db.families():
             self.font_combo.setCurrentText("Microsoft YaHei")
         else:
