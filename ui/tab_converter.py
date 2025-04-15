@@ -65,7 +65,7 @@ class SubtitleConverterTab(QWidget):
         extract_res_btn.clicked.connect(self.extract_resolution_from_ass)
         resolution_layout.addWidget(extract_res_btn)
         
-        resolution_group.setLayout(resolution_layout)
+        # resolution_group.setLayout(resolution_layout)
         
         # 样式编辑
         style_group = QGroupBox("ASS样式定义")
@@ -88,15 +88,7 @@ class SubtitleConverterTab(QWidget):
         # 字体名称 - 使用下拉框
         font_name_layout = QHBoxLayout()
         font_name_layout.addWidget(QLabel("字体名称:"))
-        self.font_combo = QFontComboBox()
-        # 设置默认字体
-        font_db = QFontDatabase()
-        default_font = "FOT-Humming ProN E"  # 默认字体
-        if "Humming" in font_db.families():
-            default_font = "FOT-Humming ProN E"
-        elif "Microsoft YaHei" in font_db.families():
-            default_font = "Microsoft YaHei"
-        self.font_combo.setCurrentText(default_font)
+        self.font_combo = QLineEdit("FOT-Seurat ProN B")
         font_name_layout.addWidget(self.font_combo)
         params_layout.addLayout(font_name_layout)
         
@@ -205,7 +197,7 @@ class SubtitleConverterTab(QWidget):
         layout.addLayout(input_layout)
         layout.addLayout(output_layout)
         layout.addWidget(self.suffix_group)
-        layout.addWidget(resolution_group)
+        # layout.addWidget(resolution_group)
         layout.addWidget(style_group)
         layout.addLayout(button_layout)
         layout.addWidget(self.log_area)
@@ -226,16 +218,7 @@ class SubtitleConverterTab(QWidget):
 
     # 在类中添加新的方法
     def reset_style_to_default(self):
-        """将样式参数重置为默认值"""
-        # 重置字体选择
-        font_db = QFontDatabase()
-        if "FOT-Humming ProN E" in font_db.families():
-            self.font_combo.setCurrentText("FOT-Humming ProN E")
-        elif "Microsoft YaHei" in font_db.families():
-            self.font_combo.setCurrentText("Microsoft YaHei")
-        else:
-            self.font_combo.setCurrentIndex(0)
-        
+        """将样式参数重置为默认值"""   
         # 重置字体大小
         self.font_size_spin.setValue(70)
         
@@ -309,20 +292,6 @@ class SubtitleConverterTab(QWidget):
         style_name = parts[0][7:].strip()  # 提取"Style: "之后的部分
         self.style_name_edit.setText(style_name)
 
-        # 设置字体名称
-        font_name = parts[1].strip()
-        font_db = QFontDatabase()
-        fonts = font_db.families()
-        
-        if font_name in fonts:
-            self.font_combo.setCurrentText(font_name)
-        else:
-            # 如果字体不存在，尝试设置最接近的
-            similar_fonts = [f for f in fonts if font_name.lower() in f.lower()]
-            if similar_fonts:
-                self.font_combo.setCurrentText(similar_fonts[0])
-            else:
-                self.font_combo.setCurrentIndex(0)
         
         # 设置其他参数
         self.font_size_spin.setValue(int(parts[2].strip()))
@@ -352,7 +321,7 @@ class SubtitleConverterTab(QWidget):
         
         # 获取用户当前选择的参数
         style_name = self.style_name_edit.text().strip() or "Dial_JP"
-        font_name = self.font_combo.currentText()
+        font_name = self.font_combo.text().strip() or "FOT-Seurat ProN B"
         font_size = str(self.font_size_spin.value())
         colors = [btn.text() for btn in self.color_btns]
         
@@ -420,8 +389,6 @@ class SubtitleConverterTab(QWidget):
         with open(srt_path, 'r', encoding='utf-8') as f:
             srt_content = f.read()
         
-        play_res_x = self.res_x_spin.value()
-        play_res_y = self.res_y_spin.value()
         style = self.style_edit.toPlainText().strip() or DEFAULT_STYLE
         
         # 从样式定义中提取样式名称
@@ -430,18 +397,15 @@ class SubtitleConverterTab(QWidget):
             parts = style.split(",")
             style_name = parts[0][7:].strip()  # 提取"Style: "之后的部分
         
-        if play_res_x == 1920:
-            scaledBorderAndShadowFlag = "yes"
-        else:
-            scaledBorderAndShadowFlag = "no"
+        scaledBorderAndShadowFlag = "yes"
             
         ass_content = [
             "[Script Info]",
             "ScriptType: v4.00+",
             "WrapStyle: 2",
             "ScaledBorderAndShadow: " + scaledBorderAndShadowFlag,
-            f"PlayResX: {play_res_x}",
-            f"PlayResY: {play_res_y}",
+            f"PlayResX: {1920}",
+            f"PlayResY: {1080}",
             "YCbCr Matrix: TV.709",
             # f"LayoutResX: 1920",
             # f"LayoutResY: 1080",
@@ -518,8 +482,8 @@ class SubtitleConverterTab(QWidget):
         self.log(f"输入目录: {input_dir}")
         self.log(f"输出目录: {output_dir}")
         self.log(suffix_info)
-        self.log(f"分辨率: {self.res_x_spin.value()}x{self.res_y_spin.value()}")
-        self.log(f"使用字体: {self.font_combo.currentText()}")
+        # self.log(f"分辨率: {self.res_x_spin.value()}x{self.res_y_spin.value()}")
+        self.log(f"使用字体: {self.font_combo.text().strip()}")
         
         success = failed = skipped = 0
         
