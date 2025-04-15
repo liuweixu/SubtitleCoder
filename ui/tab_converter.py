@@ -429,17 +429,22 @@ class SubtitleConverterTab(QWidget):
         if style.startswith("Style: "):
             parts = style.split(",")
             style_name = parts[0][7:].strip()  # 提取"Style: "之后的部分
-
+        
+        if play_res_x == 1920:
+            scaledBorderAndShadowFlag = "yes"
+        else:
+            scaledBorderAndShadowFlag = "no"
+            
         ass_content = [
             "[Script Info]",
             "ScriptType: v4.00+",
             "WrapStyle: 2",
-            "ScaledBorderAndShadow: yes",
+            "ScaledBorderAndShadow: " + scaledBorderAndShadowFlag,
             f"PlayResX: {play_res_x}",
             f"PlayResY: {play_res_y}",
             "YCbCr Matrix: TV.709",
-            f"LayoutResX: {play_res_x}",
-            f"LayoutResY: {play_res_y}",
+            # f"LayoutResX: 1920",
+            # f"LayoutResY: 1080",
             "",
             "[V4+ Styles]",
             "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
