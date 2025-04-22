@@ -1,12 +1,9 @@
 import os
-import subprocess
-import chardet
 from shutil import rmtree
-import re
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
                               QPushButton, QProgressBar, QTextEdit, QFileDialog,
-                              QMessageBox, QCheckBox, QGroupBox, QScrollArea, QRadioButton, QButtonGroup)
-from PySide6.QtCore import Qt, QThread, Signal, QObject
+                              QMessageBox, QGroupBox, QRadioButton, QButtonGroup)
+from PySide6.QtCore import Qt, QThread
 from utils.worker import ExtractorWorker
 
 class SubtitleExtractorTab(QWidget):

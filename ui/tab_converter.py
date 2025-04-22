@@ -3,12 +3,10 @@ import re
 from datetime import datetime
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
                               QPushButton, QTextEdit, QFileDialog, QMessageBox,
-                              QGroupBox, QSpinBox, QColorDialog, QFontComboBox, 
-                              QScrollArea, QButtonGroup, QCheckBox, QSizePolicy)
-from PySide6.QtCore import Qt, Signal, QObject
-from PySide6.QtGui import QColor, QFontDatabase
+                              QGroupBox, QSpinBox, QColorDialog, 
+                              QScrollArea,  QCheckBox, QSizePolicy)
+from PySide6.QtGui import QColor
 from utils.styles import DEFAULT_STYLE
-from utils.resolution import ResolutionExtractor
 
 class SubtitleConverterTab(QWidget):
     def __init__(self):
@@ -17,7 +15,6 @@ class SubtitleConverterTab(QWidget):
         self.current_play_res_x = 1920
         self.current_play_res_y = 1080
         self.current_font_size = 70
-        self.resolution_extractor = ResolutionExtractor()
         self.suffix_checkboxes = []  # 存储后缀选择复选框
         self.init_ui()
 

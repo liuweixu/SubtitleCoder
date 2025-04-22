@@ -2,7 +2,6 @@ import os
 import subprocess
 import chardet
 from shutil import rmtree
-import re
 from PySide6.QtCore import QObject, Signal
 
 class ExtractorWorker(QObject):
