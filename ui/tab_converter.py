@@ -19,8 +19,6 @@ class SubtitleConverterTab(QWidget):
         self.current_font_size = 70
         self.resolution_extractor = ResolutionExtractor()
         self.suffix_checkboxes = []  # 存储后缀选择复选框
-        self.suffix_button_group = QButtonGroup(self)  # 用于管理复选框组
-        self.suffix_button_group.setExclusive(False)  # 允许多选
         self.init_ui()
 
 
@@ -43,29 +41,6 @@ class SubtitleConverterTab(QWidget):
         output_layout.addWidget(QLabel("输出目录:"))
         output_layout.addWidget(self.output_edit)
         output_layout.addWidget(output_btn)
-        
-        # 分辨率设置
-        resolution_group = QGroupBox("分辨率设置 (PlayResX/Y)")
-        resolution_layout = QHBoxLayout()
-        
-        resolution_layout.addWidget(QLabel("PlayResX:"))
-        self.res_x_spin = QSpinBox()
-        self.res_x_spin.setRange(1, 9999)
-        self.res_x_spin.setValue(1920)
-        resolution_layout.addWidget(self.res_x_spin)
-        
-        resolution_layout.addWidget(QLabel("PlayResY:"))
-        self.res_y_spin = QSpinBox()
-        self.res_y_spin.setRange(1, 9999)
-        self.res_y_spin.setValue(1080)
-        resolution_layout.addWidget(self.res_y_spin)
-        
-        # 从ASS提取分辨率按钮
-        extract_res_btn = QPushButton("从ASS提取")
-        extract_res_btn.clicked.connect(self.extract_resolution_from_ass)
-        resolution_layout.addWidget(extract_res_btn)
-        
-        # resolution_group.setLayout(resolution_layout)
         
         # 样式编辑
         style_group = QGroupBox("ASS样式定义")
@@ -100,9 +75,6 @@ class SubtitleConverterTab(QWidget):
         self.font_size_spin.setValue(70)
         font_size_layout.addWidget(self.font_size_spin)
         
-        calc_font_btn = QPushButton("计算大小")
-        calc_font_btn.clicked.connect(self.calculate_font_size)
-        font_size_layout.addWidget(calc_font_btn)
         params_layout.addLayout(font_size_layout)
         
         # 颜色设置 &H00FFFFFF,&H000000FF,&H00705E5B,&H00000000
@@ -197,18 +169,11 @@ class SubtitleConverterTab(QWidget):
         layout.addLayout(input_layout)
         layout.addLayout(output_layout)
         layout.addWidget(self.suffix_group)
-        # layout.addWidget(resolution_group)
         layout.addWidget(style_group)
         layout.addLayout(button_layout)
         layout.addWidget(self.log_area)
         
-        # 连接信号
-        self.res_x_spin.valueChanged.connect(self.update_resolution_values)
-        self.res_y_spin.valueChanged.connect(self.update_resolution_values)
-        self.resolution_extractor.resolution_extracted.connect(self.update_resolution_ui)
-        
         # 初始更新
-        self.update_resolution_values()
         self.update_style_params()
 
         # 重置
@@ -241,42 +206,6 @@ class SubtitleConverterTab(QWidget):
         """清空日志区域"""
         self.log_area.clear()
         self.log("日志已清空")
-
-    def calculate_font_size(self):
-        """根据分辨率计算字体大小"""
-        play_res_x = self.res_x_spin.value()
-        play_res_y = self.res_y_spin.value()
-        
-        font_size = 69 * play_res_x / 1920
-        if play_res_x == 1280:
-            font_size -= 5
-        if play_res_x == 1024:
-            font_size -= 1
-        
-        calculated_size = round(font_size)
-        self.font_size_spin.setValue(calculated_size)
-        self.log(f"计算字体大小: {calculated_size} (基于分辨率 {play_res_x}x{play_res_y})")
-        return calculated_size
-
-    def update_resolution_values(self):
-        """更新分辨率值"""
-        self.current_play_res_x = self.res_x_spin.value()
-        self.current_play_res_y = self.res_y_spin.value()
-        self.calculate_font_size()
-
-    def update_resolution_ui(self, filename, res_x, res_y):
-        """更新分辨率UI显示"""
-        self.res_x_spin.setValue(int(res_x))
-        self.res_y_spin.setValue(int(res_y))
-        self.log(f"从 {filename} 提取分辨率: {res_x}x{res_y}")
-
-    def extract_resolution_from_ass(self):
-        """从ASS文件提取分辨率"""
-        filepath, _ = QFileDialog.getOpenFileName(
-            self, "选择ASS文件", "", "ASS Files (*.ass)"
-        )
-        if filepath:
-            self.resolution_extractor.extract_from_ass(filepath)
 
     def update_style_params(self):
         """从样式定义更新参数"""
@@ -441,7 +370,7 @@ class SubtitleConverterTab(QWidget):
             f.write('\n'.join(ass_content))
 
     def start_conversion(self):
-        """开始转换（修改后的版本，支持后缀筛选）"""
+        """开始转换"""
         if not self.validate_paths():
             return
         
@@ -482,7 +411,6 @@ class SubtitleConverterTab(QWidget):
         self.log(f"输入目录: {input_dir}")
         self.log(f"输出目录: {output_dir}")
         self.log(suffix_info)
-        # self.log(f"分辨率: {self.res_x_spin.value()}x{self.res_y_spin.value()}")
         self.log(f"使用字体: {self.font_combo.text().strip()}")
         
         success = failed = skipped = 0
