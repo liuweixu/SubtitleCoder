@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineE
                               QPushButton, QProgressBar, QTextEdit, QFileDialog,
                               QMessageBox, QGroupBox, QRadioButton, QButtonGroup)
 from PySide6.QtCore import Qt, QThread
-from utils.worker import ExtractorWorker
+from utils.extractorWorker import ExtractorWorker
 
 class SubtitleExtractorTab(QWidget):
     def __init__(self):
