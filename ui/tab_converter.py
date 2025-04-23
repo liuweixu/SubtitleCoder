@@ -12,8 +12,6 @@ class SubtitleConverterTab(QWidget):
     def __init__(self):
         super().__init__()
         self.overwrite_mode = None
-        self.current_play_res_x = 1920
-        self.current_play_res_y = 1080
         self.current_font_size = 70
         self.suffix_checkboxes = []  # 存储后缀选择复选框
         self.init_ui()

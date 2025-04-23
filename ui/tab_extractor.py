@@ -100,16 +100,6 @@ class SubtitleExtractorTab(QWidget):
         self.log_area.setReadOnly(True)
         self.log_area.setPlaceholderText("处理日志将显示在这里...")  # 添加placeholder文本
 
-        # 分辨率信息显示区域
-        resolution_group = QGroupBox("字幕分辨率信息")
-        resolution_layout = QVBoxLayout()
-        self.resolution_display = QTextEdit()
-        self.resolution_display.setReadOnly(True)
-        self.resolution_display.setMaximumHeight(150)
-        self.resolution_display.setPlaceholderText("处理ASS字幕文件后，这里会显示PlayResX和PlayResY的值...")
-        resolution_layout.addWidget(self.resolution_display)
-        resolution_group.setLayout(resolution_layout)
-
         # 语言选择组
         language_group = QGroupBox("选择字幕语言")
         language_layout = QHBoxLayout()
@@ -123,9 +113,7 @@ class SubtitleExtractorTab(QWidget):
         save_group = QGroupBox("保存选项")
         save_layout = QHBoxLayout()
         self.save_radio = QRadioButton("保存提取的字幕文件", checked=True)
-        self.no_save_radio = QRadioButton("仅提取分辨率信息")
         save_layout.addWidget(self.save_radio)
-        save_layout.addWidget(self.no_save_radio)
         save_group.setLayout(save_layout)
 
         # 组合控件
@@ -139,7 +127,6 @@ class SubtitleExtractorTab(QWidget):
         layout.addWidget(QLabel("处理进度:"))
         layout.addWidget(self.progress_bar)
         layout.addLayout(btn_layout)
-        layout.addWidget(resolution_group)
         layout.addWidget(QLabel("处理日志:"))
         layout.addWidget(self.log_area)
         
@@ -167,25 +154,16 @@ class SubtitleExtractorTab(QWidget):
 
     def update_resolution_info(self, filename, res_x, res_y):
         if res_x == "N/A (SRT字幕)":
-            info = f"{filename}: 这是SRT字幕，无法获取PlayResX/PlayResY值"
+            info = f"{filename}: SRT"
         else:
-            info = f"{filename}: PlayResX = {res_x}, PlayResY = {res_y}"
-        
-        self.resolution_display.append(info)
-        self.resolution_display.verticalScrollBar().setValue(
-            self.resolution_display.verticalScrollBar().maximum()
-        )
+            info = f"{filename}: ASS"
 
     def start_processing(self):
         input_dir = self.input_edit.text()
         output_dir = self.output_edit.text()
 
-        # 获取保存选项
-        read_only_mode = self.no_save_radio.isChecked()
-
-
         # 如果选择保存文件，需要验证输出目录
-        if not read_only_mode and not os.path.isdir(output_dir):
+        if not os.path.isdir(output_dir):
             try:
                 os.makedirs(output_dir)
             except:
@@ -206,10 +184,6 @@ class SubtitleExtractorTab(QWidget):
         except ValueError:
             QMessageBox.warning(self, "输入错误", "字体调整值必须是整数（如+5或-3）")
             return
-
-        # # 复选
-        # process_mkv = self.mkv_check.isChecked()
-        # process_ass = self.ass_check.isChecked()
 
         # 单选
         process_mkv = self.mkv_radio.isChecked()
@@ -243,12 +217,8 @@ class SubtitleExtractorTab(QWidget):
             QMessageBox.warning(self, "提示", "输入文件夹中没有符合选择的文件类型！")
             return
 
-        self.resolution_display.clear()
-
         self.worker_thread = QThread()
         self.worker = ExtractorWorker(input_dir, output_dir, media_files, font_adjust, track_id, language)
-
-        self.worker.set_read_only_mode(read_only_mode)  # 设置只读模式
         
         self.worker.moveToThread(self.worker_thread)
         
