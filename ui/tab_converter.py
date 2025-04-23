@@ -3,7 +3,7 @@ import re
 from datetime import datetime
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
                               QPushButton, QTextEdit, QFileDialog, QMessageBox,
-                              QGroupBox, QSpinBox, QColorDialog, 
+                              QGroupBox, QSpinBox, QColorDialog, QDoubleSpinBox, 
                               QScrollArea,  QCheckBox, QSizePolicy)
 from PySide6.QtGui import QColor
 from utils.styles import DEFAULT_STYLE
@@ -48,36 +48,54 @@ class SubtitleConverterTab(QWidget):
         self.style_params_group = QGroupBox("样式参数")
         params_layout = QVBoxLayout()
 
-        # 添加样式名称编辑框
-        style_name_layout = QHBoxLayout()
-        style_name_layout.addWidget(QLabel("样式名称:"))
+        # 添加样式名称和字体名称编辑框
+        style_font_name_layout = QHBoxLayout()
+        style_font_name_layout.addWidget(QLabel("样式名称 "))
         self.style_name_edit = QLineEdit("Dial_JP")
-        style_name_layout.addWidget(self.style_name_edit)
-        params_layout.addLayout(style_name_layout)
-        
-        # 字体名称 - 使用下拉框
-        font_name_layout = QHBoxLayout()
-        font_name_layout.addWidget(QLabel("字体名称:"))
+        style_font_name_layout.addWidget(self.style_name_edit)
+        style_font_name_layout.addWidget(QLabel("字体名称 "))
         self.font_combo = QLineEdit("FOT-Seurat ProN B")
-        font_name_layout.addWidget(self.font_combo)
-        params_layout.addLayout(font_name_layout)
+        style_font_name_layout.addWidget(self.font_combo)
+        params_layout.addLayout(style_font_name_layout)
         
-        # 字体大小
-        font_size_layout = QHBoxLayout()
-        font_size_layout.addWidget(QLabel("字体大小:"))
-        self.font_size_spin = QSpinBox()
+        # 字体大小、粗体设置、描边效果、Shadow（阴影设置）和MarginV（垂直边距）
+        font_bold_outline_shadow_marginv_layout = QHBoxLayout()
+        font_bold_outline_shadow_marginv_layout.setSpacing(20)
+        font_bold_outline_shadow_marginv_layout.addWidget(QLabel("字体大小 "))
+        self.font_size_spin = QSpinBox() 
         self.font_size_spin.setRange(1, 200)
         self.font_size_spin.setValue(70)
-        font_size_layout.addWidget(self.font_size_spin)
+        font_bold_outline_shadow_marginv_layout.addWidget(self.font_size_spin)
+        font_bold_outline_shadow_marginv_layout.addWidget(QLabel("粗体设置 "))
+        self.bold_spin = QSpinBox()
+        self.bold_spin.setRange(-1, 2)
+        self.bold_spin.setValue(-1)
+        font_bold_outline_shadow_marginv_layout.addWidget(self.bold_spin)
+        font_bold_outline_shadow_marginv_layout.addWidget(QLabel("描边效果 "))
+        self.outline_spin = QDoubleSpinBox()
+        self.outline_spin.setRange(0, 5)
+        self.outline_spin.setValue(3.5)
+        self.outline_spin.setSingleStep(0.1)
+        font_bold_outline_shadow_marginv_layout.addWidget(self.outline_spin)
+        font_bold_outline_shadow_marginv_layout.addWidget(QLabel("Shadow "))
+        self.shadow_spin = QSpinBox()
+        self.shadow_spin.setRange(0, 100)
+        self.shadow_spin.setValue(0)
+        font_bold_outline_shadow_marginv_layout.addWidget(self.shadow_spin)
+        font_bold_outline_shadow_marginv_layout.addWidget(QLabel("MarginV "))
+        self.marginv_spin = QSpinBox()
+        self.marginv_spin.setRange(0, 100)
+        self.marginv_spin.setValue(20)
+        font_bold_outline_shadow_marginv_layout.addWidget(self.marginv_spin)
         
-        params_layout.addLayout(font_size_layout)
+        params_layout.addLayout(font_bold_outline_shadow_marginv_layout)
         
         # 颜色设置 &H00FFFFFF,&H000000FF,&H00705E5B,&H00000000
         colors = [
-            ("PrimaryColour:", "&H00FFFFFF", self.show_color_dialog),  
-            ("SecondaryColour:", "&H000000FF", self.show_color_dialog),
-            ("OutlineColour:", "&H00705E5B", self.show_color_dialog),
-            ("BackColour:", "&H00000000", self.show_color_dialog)
+            ("PrimaryColour ", "&H00FFFFFF", self.show_color_dialog),  
+            ("SecondaryColour ", "&H000000FF", self.show_color_dialog),
+            ("OutlineColour ", "&H00705E5B", self.show_color_dialog),
+            ("BackColour ", "&H00000000", self.show_color_dialog)
         ]
         
         self.color_btns = []
@@ -179,14 +197,20 @@ class SubtitleConverterTab(QWidget):
     # 在类中添加新的方法
     def reset_style_to_default(self):
         """将样式参数重置为默认值"""   
-        # 重置字体大小
-        self.font_size_spin.setValue(70)
+        # 重置字体大小等参数
+        self.font_size_spin.setValue(64)
+        self.outline_spin.setValue(3.5) 
+        self.bold_spin.setValue(-1)
+        self.marginv_spin.setValue(20)
+        self.shadow_spin.setValue(0) 
+        self.style_name_edit.setText("Dial_JP")
+        self.font_combo.setText("FOT-Seurat ProN B")
         
         # 重置颜色按钮  
         default_colors = [
             "&H00FFFFFF",  # PrimaryColour
             "&H000000FF",  # SecondaryColour
-            "&H00705E5B",  # OutlineColour
+            "&H00864D00",  # OutlineColour
             "&H00000000"   # BackColour
         ]
         for btn, color in zip(self.color_btns, default_colors):
@@ -226,7 +250,7 @@ class SubtitleConverterTab(QWidget):
                 self.color_btns[i].setText(parts[idx].strip())
 
     def update_style_from_params(self):
-        """从参数更新样式定义，只更新字体名称、大小和颜色参数，保持其他参数不变"""
+        """从参数更新样式定义，只更新字体名称、大小、颜色参数、描边效果，保持其他参数不变"""
         # 获取当前样式文本
         current_style = self.style_edit.toPlainText().strip()
         
@@ -248,14 +272,24 @@ class SubtitleConverterTab(QWidget):
         font_name = self.font_combo.text().strip() or "FOT-Seurat ProN B"
         font_size = str(self.font_size_spin.value())
         colors = [btn.text() for btn in self.color_btns]
+        bold = str(self.bold_spin.value())
+        outline = f"{self.outline_spin.value():.1f}"
+        shadow = str(self.shadow_spin.value())
+        marginv = str(self.marginv_spin.value())
         
-        # 只更新指定的6个参数，其他参数保持不变
+        # 只更新指定的7个参数，其他参数保持不变
         new_parts = [
             f"Style: {style_name}",  # 使用自定义样式名称
             font_name,  # 更新字体名称
             font_size,  # 更新字体大小
             *colors,    # 更新4个颜色参数
-            *parts[7:]  # 保持其他参数不变
+            bold,       # 更新粗体设置，保持为-1表示不使用粗体，0表示正常，1表示粗体，2表示极粗体
+            *parts[8:16],  # 保持其他参数不变
+            outline,    # 更新描边效果
+            shadow,     # 更新Shadow
+            *parts[18:21],  # 保持其他参数不变
+            marginv,    # 更新MarginV
+            parts[22]
         ]
         
         # 重新组合为样式字符串

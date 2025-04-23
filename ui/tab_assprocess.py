@@ -152,6 +152,9 @@ class AssProcessTab(QWidget):
         if not self.input_edit1.text() or not self.suffix_edit1.text() or not self.yes_or_no_edit1.text():
             self.log("请输入完整")
             return
+        if self.yes_or_no_edit1.text().lower() not in ['yes', 'no']:
+            self.log("请输入yes或no")
+            return
         folder_path = self.input_edit1.text()
         file_suffix = self.suffix_edit1.text()
         yes_or_no = self.yes_or_no_edit1.text()
