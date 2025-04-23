@@ -20,13 +20,6 @@ class SubtitleExtractorTab(QWidget):
         self.filetype_group = QGroupBox("选择要处理的文件类型")
         filetype_layout = QHBoxLayout()
 
-        # # 复选框
-        # self.mkv_check = QCheckBox("处理MKV文件", checked=True)
-        # self.ass_check = QCheckBox("处理ASS文件", checked=False)
-        # filetype_layout.addWidget(self.mkv_check)
-        # filetype_layout.addWidget(self.ass_check)
-        # self.filetype_group.setLayout(filetype_layout)
-
         # 单选框
         self.filetype_btn_group = QButtonGroup(self)
         self.mkv_radio = QRadioButton("处理MKV文件")
@@ -109,17 +102,9 @@ class SubtitleExtractorTab(QWidget):
         language_layout.addWidget(self.jp_radio)
         language_group.setLayout(language_layout)
 
-        # 保存字幕选项组
-        save_group = QGroupBox("保存选项")
-        save_layout = QHBoxLayout()
-        self.save_radio = QRadioButton("保存提取的字幕文件", checked=True)
-        save_layout.addWidget(self.save_radio)
-        save_group.setLayout(save_layout)
-
         # 组合控件
         layout.addWidget(self.filetype_group)
-        layout.addWidget(language_group) 
-        layout.addWidget(save_group) 
+        layout.addWidget(language_group)  
         layout.addLayout(input_layout)
         layout.addLayout(output_layout)
         layout.addLayout(track_layout)
