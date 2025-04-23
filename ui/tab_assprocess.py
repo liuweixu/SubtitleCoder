@@ -43,7 +43,7 @@ class AssProcessTab(QWidget):
         scaled_border_and_shadow_group.setLayout(scaled_border_and_shadow)
         # 确认进行按钮
         self.confirm_btn1 = QPushButton("确认进行")
-        self.confirm_btn1.clicked.connect(self.scaled_border_and_shadow_modify)
+        self.confirm_btn1.clicked.connect(self.process_subtitles1)
         scaled_border_and_shadow.addWidget(self.confirm_btn1)
         scaled_border_and_shadow_group.setLayout(scaled_border_and_shadow)
         
@@ -82,7 +82,7 @@ class AssProcessTab(QWidget):
         style_name_modify.addLayout(font_name_layout2)
         # 确认进行按钮
         self.confirm_btn2 = QPushButton("确认进行")
-        self.confirm_btn2.clicked.connect(self.style_font_name_modify)
+        self.confirm_btn2.clicked.connect(self.process_subtitles2)
         style_name_modify.addWidget(self.confirm_btn2)
         style_name_modify_group.setLayout(style_name_modify)
 
@@ -121,7 +121,7 @@ class AssProcessTab(QWidget):
         style_information_modify.addLayout(style_information_layout3)
         # 确认进行按钮
         self.confirm_btn3 = QPushButton("确认进行")
-        self.confirm_btn3.clicked.connect(self.style_information_modify)
+        self.confirm_btn3.clicked.connect(self.process_subtitles3)
         style_information_modify.addWidget(self.confirm_btn3)
         style_information_modify_group.setLayout(style_information_modify)
 
@@ -301,6 +301,26 @@ class AssProcessTab(QWidget):
                 except Exception as e:
                     self.log(f'处理文件 {filepath} 时出错: {str(e)}')
 
+    def process_subtitles1(self):
+        self.log("========================================================")
+        self.log("1. 修改ScaledBorderAndShadow")
+        self.log("========================================================")
+        self.log("处理中...")
+        self.scaled_border_and_shadow_modify()
+    
+    def process_subtitles2(self):
+        self.log("========================================================")
+        self.log("2. 修改ass样式的字体名称")
+        self.log("========================================================")
+        self.log("处理中...")
+        self.style_font_name_modify()
+    
+    def process_subtitles3(self):
+        self.log("========================================================")
+        self.log("3. 根据输入样式修改ass样式")
+        self.log("========================================================")
+        self.log("处理中...")
+        self.style_information_modify()
 
     def clear_log(self):
         """清空日志区域"""
