@@ -158,8 +158,13 @@ class AssProcessTab(QWidget):
         folder_path = self.input_edit1.text()
         file_suffix = self.suffix_edit1.text()
         yes_or_no = self.yes_or_no_edit1.text()
+        if not os.path.isdir(folder_path):
+            self.log(f"指定的文件夹路径不存在: {folder_path}")
+            return
+        filemodify = False # 用于判断是否有需要修改的文件
         for filename in os.listdir(folder_path):
             if filename.endswith(file_suffix):
+                filemodify = True
                 filepath = os.path.join(folder_path, filename)
                 try:
                     with open(filepath, 'r', encoding='utf-8') as f:
@@ -206,7 +211,9 @@ class AssProcessTab(QWidget):
                 
                 except Exception as e:
                     self.log(f'处理文件 {filepath} 时出错: {str(e)}')    
-    
+        if filemodify == False:
+            self.log(f'需要修改的文件不存在')
+
     def style_font_name_modify(self):
         '''2. 修改ass样式的字体名称函数'''
         if not self.input_edit2.text() or not self.suffix_edit2.text() or not self.style_name_edit2.text() or not self.font_name_edit2.text():
@@ -216,13 +223,19 @@ class AssProcessTab(QWidget):
         file_suffix = self.suffix_edit2.text()  # 获取文件后缀
         style_name = self.style_name_edit2.text()  # 获取样式名称
         font_name = self.font_name_edit2.text()  # 获取字体名称
+        if not os.path.isdir(folder_path):
+            self.log(f"指定的文件夹路径不存在: {folder_path}")
+            return
+        filemodify = False # 用于判断是否有需要修改的文件
         for filename in os.listdir(folder_path):
             if len(filename.split('.')) == len(file_suffix.split('.')) and filename.endswith(file_suffix):
+                filemodify = True
                 filepath = os.path.join(folder_path, filename)
                 with open(filepath, 'rb') as f:
                     raw_data = f.read()
                     encoding = chardet.detect(raw_data)['encoding'] or 'gbk'  # 默认回退到GBK
                 
+                stylemodify = False # 用于判断是否有需要修改的样式
                 try:
                     with open(filepath, 'r', encoding=encoding) as f:
                         lines = f.readlines()
@@ -243,19 +256,25 @@ class AssProcessTab(QWidget):
                             
                             # 如果在 [V4+ Styles] 部分且找到目标行
                             if in_style_info and line_stripped.startswith('Style: ') and line_stripped.split(',')[0].split(':')[1].strip() == style_name:
+                                stylemodify = True
                                 parts = line_stripped.split(',')
                                 parts[1] = font_name
                                 new_line = ','.join([parts[0], parts[1]] + parts[2:])
                                 lines[i] = new_line + '\n'
                                 break
-                                    #保存修改后的文件
-                    with open(filepath, 'w', encoding='utf-8') as f:
-                        f.writelines(lines)
-                        self.log(f'已修改文件: {filepath}') 
+                    #保存修改后的文件
+                    if stylemodify == True:
+                        with open(filepath, 'w', encoding='utf-8') as f:
+                            f.writelines(lines)
+                            self.log(f'已修改文件: {filepath}') 
+                    else:
+                        self.log(f'未找到需要修改的样式: {filepath}')
             
                 except Exception as e:
                     self.log(f'处理文件 {filepath} 时出错: {str(e)}')
-
+        if filemodify == False:
+            self.log(f'需要修改的文件不存在')
+    
     def style_information_modify(self):
         '''3. 根据输入样式修改ass样式函数'''
         if not self.input_edit3.text() or not self.suffix_edit3.text() or not self.style_name_edit3.text() or not self.style_information_edit3.text():
@@ -265,13 +284,18 @@ class AssProcessTab(QWidget):
         file_suffix = self.suffix_edit3.text()  # 获取文件后缀
         style_name = self.style_name_edit3.text()  # 获取样式名称
         style_information = self.style_information_edit3.text()  # 获取样式信息
+        if not os.path.isdir(folder_path):
+            self.log(f"指定的文件夹路径不存在: {folder_path}")
+            return
+        filemodify = False # 用于判断是否有需要修改的文件
         for filename in os.listdir(folder_path):
+            filemodify = True
             if len(filename.split('.')) == len(file_suffix.split('.')) and filename.endswith(file_suffix):
                 filepath = os.path.join(folder_path, filename)
                 with open(filepath, 'rb') as f:
                     raw_data = f.read()
                     encoding = chardet.detect(raw_data)['encoding'] or 'gbk'  # 默认回退到GBK
-                
+                stylemodify = False # 用于判断是否有需要修改的样式
                 try:
                     with open(filepath, 'r', encoding=encoding) as f:
                         lines = f.readlines()
@@ -292,17 +316,23 @@ class AssProcessTab(QWidget):
                             
                             # 如果在 [V4+ Styles] 部分且找到目标行
                             if in_style_info and line_stripped.startswith('Style: ') and line_stripped.split(',')[0].split(':')[1].strip() == style_name:
+                                stylemodify = True
                                 parts = line_stripped.split(',')
                                 new_line = parts[0] + ',' + style_information
                                 lines[i] = new_line + '\n'
                                 break
-                                    #保存修改后的文件
-                    with open(filepath, 'w', encoding='utf-8') as f:
-                        f.writelines(lines)
-                        self.log(f'已修改文件: {filepath}') 
+                    #保存修改后的文件
+                    if stylemodify == True:
+                        with open(filepath, 'w', encoding='utf-8') as f:
+                            f.writelines(lines)
+                            self.log(f'已修改文件: {filepath}') 
+                    else:
+                        self.log(f'未找到需要修改的样式: {filepath}')
             
                 except Exception as e:
                     self.log(f'处理文件 {filepath} 时出错: {str(e)}')
+        if filemodify == False:
+            self.log(f'需要修改的文件不存在')
 
     def process_subtitles1(self):
         self.log("========================================================")
