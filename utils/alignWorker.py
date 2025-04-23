@@ -32,7 +32,11 @@ class AlignWorker(QThread):
                     cn_ref_path = temp_srt
                 else:
                     cn_ref_path = cn_path
-
+                """
+                emit功能
+                - 发射信号：将字符串格式的日志信息 (如对齐成功/失败消息) 推送至Qt事件队列
+                - 线程安全: 通过Qt的跨线程通信机制, 实现工作线程与主线程的安全交互
+                """
                 try:
                     align_subtitles(jp_path, cn_ref_path, output_path)
                     self.log_signal.emit(f"成功对齐: {jp_file} 和 {cn_file}")

@@ -65,7 +65,7 @@ class SubtitleAlignTab(QWidget):
 
         # 确认按钮
         self.confirm_btn = QPushButton("确认")
-        self.confirm_btn.clicked.connect(self.start_alignment)  # 连接按钮点击事件到槽函数
+        self.confirm_btn.clicked.connect(self.start_alignment)  # 连接按钮点击事件到槽函数，用于启动对齐操作（涉及到异步通信）
         
         # 日志显示
         self.log_area = QTextEdit()
@@ -98,7 +98,15 @@ class SubtitleAlignTab(QWidget):
             self.suffix_srt_edit.text() or '.srt',
             self.suffix_ass_edit.text() or '.ass'
         )
-        self.worker.log_signal.connect(self.log)
+        """
+        连接信号和槽函数，用于处理日志和完成信号。
+        当 worker 的 log_signal 信号被触发时 (即接收信号)，会调用 self.log 方法，将日志信息显示在文本框中。
+        主线程的 log() 方法会自动收到字符串参数，并显示到日志区域中。
+        当 worker 的 finished 信号被触发时，会调用 lambda 函数，将确认按钮的状态设置为可启用。
+        这样，当 worker 完成任务时，确认按钮就会重新启用，用户可以再次开始新的任务。
+        """
+        # 连接日志信号到槽函数，是观察者模式的一种实现方式，也可以理解接收信号，而self.log是接收信号时调用的处理方法（槽函数）
+        self.worker.log_signal.connect(self.log) 
         self.worker.finished.connect(lambda: self.confirm_btn.setEnabled(True))
         self.worker.start()
 
