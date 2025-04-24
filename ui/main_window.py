@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QMainWindow, QTabWidget, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QMainWindow, QTabWidget, QVBoxLayout, QWidget, QMenuBar, QMenu
 from PySide6.QtGui import QPixmap, QPainter, QFont
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from ui.tab_extractor import SubtitleExtractorTab
 from ui.tab_converter import SubtitleConverterTab
 from ui.tab_align import SubtitleAlignTab
@@ -8,6 +8,8 @@ from ui.tab_assprocess import AssProcessTab
 from pathlib import Path
 
 class MainWindow(QMainWindow):
+    style_changed = Signal(str)
+    
     def __init__(self):
         super().__init__()
         self.setWindowTitle("中日双语字幕小工具集")
@@ -16,6 +18,19 @@ class MainWindow(QMainWindow):
         # 设置背景图片
         self.background = QPixmap(str(Path(__file__).parent.parent / "resources" / "background.jpg"))  # 请替换为您的自定义图片路径
         self.background_opacity = 0.6  # 设置透明度
+        
+        # 创建菜单栏
+        self.menu_bar = QMenuBar()
+        self.setMenuBar(self.menu_bar)
+        
+        # 添加样式菜单
+        style_menu = self.menu_bar.addMenu("样式")
+        
+        # 获取qss目录下所有样式文件
+        qss_dir = Path(__file__).parent.parent / "qss"
+        for qss_file in qss_dir.glob("*.qss"):
+            action = style_menu.addAction(qss_file.stem)
+            action.triggered.connect(lambda checked, f=qss_file: self.change_style(f))
         
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -43,3 +58,7 @@ class MainWindow(QMainWindow):
         painter.setOpacity(self.background_opacity)
         painter.drawPixmap(self.rect(), self.background)
         painter.end() # 停止绘制，防止出现闪烁
+        
+    def change_style(self, qss_file):
+        """切换样式"""
+        self.style_changed.emit(str(qss_file))
