@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QMainWindow, QTabWidget, QVBoxLayout, QWidget
-from PySide6.QtGui import QPixmap, QPainter
+from PySide6.QtGui import QPixmap, QPainter, QFont
 from PySide6.QtCore import Qt
 from ui.tab_extractor import SubtitleExtractorTab
 from ui.tab_converter import SubtitleConverterTab
@@ -35,8 +35,10 @@ class MainWindow(QMainWindow):
         self.tab_widget.addTab(self.align_tab, "SRT字幕对齐")
         self.tab_widget.addTab(self.assprocess_tab, "ASS文件处理工具")
     
+
     def paintEvent(self, event):
         """重绘事件，绘制背景图片"""
         painter = QPainter(self)
         painter.setOpacity(self.background_opacity)
         painter.drawPixmap(self.rect(), self.background)
+        painter.end() # 停止绘制，防止出现闪烁
