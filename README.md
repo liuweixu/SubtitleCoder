@@ -104,5 +104,6 @@
 - [MKVToolNix](https://mkvtoolnix.download/) （灵感源泉之一）
 - [VideoCaptioner](https://github.com/WEIFENG2333/VideoCaptioner) （灵感源泉之一）
 - [【已完结】PySide6百炼成真，带你系统性入门Qt](https://www.bilibili.com/video/BV1c84y1N7iL/?spm_id_from=333.1387.favlist.content.click&vd_source=601da5164f2780fc668c82ddd0d54bcf) （b站上的PySide6学习视频）
+- [QT StyleSheet templates](https://github.com/GTRONICK/QSS) （感谢大佬开源这些qss样式）
 - [SubRenamer](https://github.com/qwqcode/SubRenamer)
 
