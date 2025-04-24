@@ -138,6 +138,7 @@ class SubtitleConverterTab(QWidget):
         self.log_area = QTextEdit()
         self.log_area.setReadOnly(True)
         self.log_area.setPlaceholderText("转换日志将显示在这里...")
+        self.log_area.setStyleSheet("background-color: rgba(255, 255, 255, 0.1);") # 设置日志页面半透明背景
 
 
         # 在原有控制按钮布局前添加后缀选择区域

@@ -128,7 +128,8 @@ class AssProcessTab(QWidget):
         # 日志显示
         self.log_area = QTextEdit()
         self.log_area.setReadOnly(True)
-        self.log_area.setPlaceholderText("日志将显示在这里")   
+        self.log_area.setPlaceholderText("日志将显示在这里")
+        self.log_area.setStyleSheet("background-color: rgba(255, 255, 255, 0.1);")  # 设置日志背景颜色为半透明的白色 
 
         # 清空日志按钮
         self.clear_log_btn = QPushButton("清空日志")

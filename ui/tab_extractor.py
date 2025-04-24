@@ -92,6 +92,7 @@ class SubtitleExtractorTab(QWidget):
         self.log_area = QTextEdit()
         self.log_area.setReadOnly(True)
         self.log_area.setPlaceholderText("处理日志将显示在这里...")  # 添加placeholder文本
+        self.log_area.setStyleSheet("background-color: rgba(255, 255, 255, 0.1);")  # 设置日志页面为半透明
 
         # 语言选择组
         language_group = QGroupBox("选择字幕语言")

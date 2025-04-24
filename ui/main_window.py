@@ -1,4 +1,6 @@
 from PySide6.QtWidgets import QMainWindow, QTabWidget, QVBoxLayout, QWidget
+from PySide6.QtGui import QPixmap, QPainter
+from PySide6.QtCore import Qt
 from ui.tab_extractor import SubtitleExtractorTab
 from ui.tab_converter import SubtitleConverterTab
 from ui.tab_align import SubtitleAlignTab
@@ -9,6 +11,10 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("中日双语字幕小工具集")
         self.setGeometry(100, 100, 900, 800)
+        
+        # 设置背景图片
+        self.background = QPixmap("resources/background.jpg")  # 请替换为您的自定义图片路径
+        self.background_opacity = 0.6  # 设置透明度
         
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -28,3 +34,9 @@ class MainWindow(QMainWindow):
         self.tab_widget.addTab(self.converter_tab, "SRT转ASS转换器")
         self.tab_widget.addTab(self.align_tab, "SRT字幕对齐")
         self.tab_widget.addTab(self.assprocess_tab, "ASS文件处理工具")
+    
+    def paintEvent(self, event):
+        """重绘事件，绘制背景图片"""
+        painter = QPainter(self)
+        painter.setOpacity(self.background_opacity)
+        painter.drawPixmap(self.rect(), self.background)
