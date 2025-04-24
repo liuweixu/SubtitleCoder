@@ -5,6 +5,7 @@ from ui.tab_extractor import SubtitleExtractorTab
 from ui.tab_converter import SubtitleConverterTab
 from ui.tab_align import SubtitleAlignTab
 from ui.tab_assprocess import AssProcessTab
+from pathlib import Path
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -13,7 +14,7 @@ class MainWindow(QMainWindow):
         self.setGeometry(100, 100, 900, 800)
         
         # 设置背景图片
-        self.background = QPixmap("resources/background.jpg")  # 请替换为您的自定义图片路径
+        self.background = QPixmap(str(Path(__file__).parent.parent / "resources" / "background.jpg"))  # 请替换为您的自定义图片路径
         self.background_opacity = 0.6  # 设置透明度
         
         central_widget = QWidget()
