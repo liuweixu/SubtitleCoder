@@ -4,7 +4,7 @@ from datetime import datetime
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
                               QPushButton, QTextEdit, QFileDialog, QMessageBox,
                               QGroupBox, QSpinBox, QColorDialog, QDoubleSpinBox, 
-                              QScrollArea,  QCheckBox, QSizePolicy)
+                              QScrollArea,  QCheckBox, QSizePolicy, QFrame)
 from PySide6.QtGui import QColor
 from utils.styles import DEFAULT_STYLE
 
@@ -20,7 +20,10 @@ class SubtitleConverterTab(QWidget):
     def init_ui(self):
         layout = QVBoxLayout(self)
 
+        # 添加后缀选择区域
+        self.suffix_group = QGroupBox("选择要转换的后缀")
         # 输入输出目录
+        input_output_suffix_layout = QVBoxLayout()
         input_layout = QHBoxLayout()
         self.input_edit = QLineEdit()
         input_btn = QPushButton("浏览...")
@@ -28,7 +31,8 @@ class SubtitleConverterTab(QWidget):
         input_layout.addWidget(QLabel("输入目录:"))
         input_layout.addWidget(self.input_edit)
         input_layout.addWidget(input_btn)
-        
+        input_output_suffix_layout.addLayout(input_layout)
+
         output_layout = QHBoxLayout()
         self.output_edit = QLineEdit()
         output_btn = QPushButton("浏览...")
@@ -36,7 +40,32 @@ class SubtitleConverterTab(QWidget):
         output_layout.addWidget(QLabel("输出目录:"))
         output_layout.addWidget(self.output_edit)
         output_layout.addWidget(output_btn)
+        input_output_suffix_layout.addLayout(output_layout)
+        # self.suffix_group.setLayout(input_output_suffix_layout)
+
+        # 直接使用布局添加复选框
+        suffix_layout = QVBoxLayout()
+        self.suffix_container_layout = QVBoxLayout()
+        suffix_layout.addLayout(self.suffix_container_layout)
         
+        # 全选/取消全选按钮
+        btn_layout = QHBoxLayout()
+        select_all_btn = QPushButton("全选")
+        select_all_btn.clicked.connect(self.select_all_suffixes)
+        btn_layout.addWidget(select_all_btn)
+        
+        deselect_all_btn = QPushButton("取消全选")
+        deselect_all_btn.clicked.connect(self.deselect_all_suffixes)
+        btn_layout.addWidget(deselect_all_btn)
+        
+        scan_suffixes_btn = QPushButton("扫描后缀")
+        scan_suffixes_btn.clicked.connect(self.scan_suffixes)
+        btn_layout.addWidget(scan_suffixes_btn)
+        
+        suffix_layout.addLayout(btn_layout)
+        input_output_suffix_layout.addLayout(suffix_layout)
+        self.suffix_group.setLayout(input_output_suffix_layout)
+
         # 样式编辑
         style_group = QGroupBox("ASS样式定义")
         style_layout = QVBoxLayout()
@@ -140,48 +169,7 @@ class SubtitleConverterTab(QWidget):
         self.log_area.setPlaceholderText("转换日志将显示在这里...")
         self.log_area.setStyleSheet("background-color: rgba(255, 255, 255, 0.1);") # 设置日志页面半透明背景
 
-
-        # 在原有控制按钮布局前添加后缀选择区域
-        self.suffix_group = QGroupBox("选择要转换的后缀")
-        suffix_layout = QVBoxLayout()
-        
-        # 添加一个滚动区域，以防后缀太多
-        scroll_area = QScrollArea()
-
-        scroll_area.setMinimumHeight(150)  # 设置最小高度为150像素
-        scroll_area.setMaximumHeight(250)  # 设置最大高度为250像素
-        scroll_area.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        scroll_content = QWidget()
-        scroll_layout = QVBoxLayout(scroll_content)
-        
-        # 这里会在扫描目录时动态添加复选框
-        self.suffix_container = QWidget()
-        self.suffix_container_layout = QVBoxLayout(self.suffix_container)
-        scroll_layout.addWidget(self.suffix_container)
-        
-        # 全选/取消全选按钮
-        btn_layout = QHBoxLayout()
-        select_all_btn = QPushButton("全选")
-        select_all_btn.clicked.connect(self.select_all_suffixes)
-        btn_layout.addWidget(select_all_btn)
-        
-        deselect_all_btn = QPushButton("取消全选")
-        deselect_all_btn.clicked.connect(self.deselect_all_suffixes)
-        btn_layout.addWidget(deselect_all_btn)
-        
-        scan_suffixes_btn = QPushButton("扫描后缀")
-        scan_suffixes_btn.clicked.connect(self.scan_suffixes)
-        btn_layout.addWidget(scan_suffixes_btn)
-        
-        scroll_layout.addLayout(btn_layout)
-        scroll_area.setWidget(scroll_content)
-        scroll_area.setWidgetResizable(True)
-        suffix_layout.addWidget(scroll_area)
-        self.suffix_group.setLayout(suffix_layout)
-
         # 布局组装
-        layout.addLayout(input_layout)
-        layout.addLayout(output_layout)
         layout.addWidget(self.suffix_group)
         layout.addWidget(style_group)
         layout.addLayout(button_layout)

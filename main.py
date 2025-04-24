@@ -17,7 +17,7 @@ class QSSLoader:
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
-    style_file = str(Path(__file__).parent / "resources" / "MacOS.qss")
+    style_file = str(Path(__file__).parent / "qss" / "MacOS.qss")
     style_sheet = QSSLoader.read_qss_file(style_file)
     window.setStyleSheet(style_sheet)
     window.show()
