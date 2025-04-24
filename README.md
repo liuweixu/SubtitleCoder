@@ -5,7 +5,8 @@
 
 ## 主要介绍
 使用Python和PySide6编写的一个软件，用于练手，主要针对中日双语动漫字幕为主的文件进行处理。
-**主要技术栈：** Python、PySide6、Github。
+
+**主要技术栈：** Python、PySide6、QSS等。
 
 ## 软件介绍
 ### 软件功能：
