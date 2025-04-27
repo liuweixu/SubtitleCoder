@@ -14,15 +14,13 @@ class ExtractorWorker(QObject):
     finished = Signal()                       # 处理完成信号
     error_occurred = Signal(str)              # 错误信息
     log_message = Signal(str)                 # 日志消息
-    resolution_info = Signal(str, str, str)    # 文件名, 分辨率X, 分辨率Y
 
-    def __init__(self, input_dir, output_dir, media_files, font_adjust=0, track_id=2, language='chs'):
+    def __init__(self, input_dir, output_dir, media_files, track_id=2, language='chs'):
         """
         初始化工作线程
         :param input_dir: 输入目录路径
         :param output_dir: 输出目录路径
         :param media_files: 要处理的文件列表
-        :param font_adjust: 字体大小调整值(可正可负)
         :param track_id: MKV字幕轨道ID(默认为2)
         :param language: 中文或日文单选
         """
@@ -30,20 +28,14 @@ class ExtractorWorker(QObject):
         self.input_dir = input_dir
         self.output_dir = output_dir
         self.media_files = media_files
-        self.font_adjust = font_adjust
         self.track_id = track_id
         self.language = language.lower()  # 'chs' 或 'jp'
         self._is_running = True  # 线程运行标志
-        self._read_only_mode = False  # 新增：只读模式标志
 
     def stop(self):
         """请求停止处理"""
         self._is_running = False
         self.log_message.emit("正在停止处理...")
-
-    def set_read_only_mode(self, read_only):
-        """设置只读模式，仅读取信息不保存文件"""
-        self._read_only_mode = read_only
 
     def run(self):
         """主处理流程"""
@@ -115,23 +107,6 @@ class ExtractorWorker(QObject):
                 target_lines.append(line)
         return target_lines
 
-    def get_ass_resolution(self, content):
-        """
-        从ASS内容中提取分辨率信息
-        :param content: ASS文件内容列表
-        :return: (PlayResX, PlayResY)
-        """
-        play_res_x = "N/A"
-        play_res_y = "N/A"
-        
-        for line in content:
-            if line.startswith("PlayResX:"):
-                play_res_x = line.split(":")[1].strip()
-            elif line.startswith("PlayResY:"):
-                play_res_y = line.split(":")[1].strip()
-        
-        return play_res_x, play_res_y
-
     def process_ass(self, input_file, output_file=None):
         """
         处理ASS字幕文件
@@ -148,38 +123,9 @@ class ExtractorWorker(QObject):
             self.log_message.emit(f"无法读取文件 {input_file}: {str(e)}")
             return False
 
-        # 获取原始分辨率并发送信号
-        play_res_x, play_res_y = self.get_ass_resolution(content)
-        self.resolution_info.emit(os.path.basename(input_file), play_res_x, play_res_y)
-
-        # 如果是只读模式，直接返回成功
-        if output_file is None or self._read_only_mode:
-            return True
-
         # 过滤日语字幕行
         jp_content = self.extract_japanese_lines(content)
-        
-        # 应用字体大小调整
-        if self.font_adjust != 0:
-            adjusted_content = []
-            for line in jp_content:
-                line = line.strip()
-                if line.startswith('Style:'):
-                    parts = line.split(',')
-                    if len(parts) >= 3:
-                        try:
-                            original_size = int(parts[2])
-                            new_size = original_size + self.font_adjust
-                            new_size = max(1, new_size)  # 确保不小于1
-                            parts[2] = str(new_size)
-                            adjusted_line = ','.join(parts)
-                            adjusted_content.append(adjusted_line)
-                            continue
-                        except (ValueError, IndexError):
-                            pass
-                adjusted_content.append(line)
-            jp_content = adjusted_content
-        
+
         # 写入输出文件
         try:
             with open(output_file, 'w', encoding='utf-8-sig') as f_out:
@@ -237,7 +183,6 @@ class ExtractorWorker(QObject):
             # 根据格式设置输出文件名
             if sub_format == 'srt':
                 final_output = os.path.join(self.output_dir, f"{base}.{suffix}.srt")
-                self.resolution_info.emit(base_name, "N/A (SRT字幕)", "N/A (SRT字幕)")
             else:  # ASS格式
                 final_output = os.path.join(self.output_dir, f"{base}.{suffix}.ass")
 
@@ -245,24 +190,21 @@ class ExtractorWorker(QObject):
             
             # 处理字幕文件
             if sub_format == 'ass':
-                success = self.process_ass(temp_sub, None if self._read_only_mode else final_output)
+                success = self.process_ass(temp_sub, final_output)
             else:  # SRT格式处理
                 try:
-                    if not self._read_only_mode:
-                        # 先删除已存在的文件（如果存在）
-                        if os.path.exists(final_output):
-                            os.remove(final_output)
-                        # 然后移动临时文件到目标位置
-                        os.rename(temp_sub, final_output)
+                    # 先删除已存在的文件（如果存在）
+                    if os.path.exists(final_output):
+                        os.remove(final_output)
+                    # 然后移动临时文件到目标位置
+                    os.rename(temp_sub, final_output)
                     success = True
                 except Exception as e:
                     self.log_message.emit(f"SRT文件处理错误: {str(e)}")
                     success = False
             
             if success:
-                if self._read_only_mode:
-                    self.log_message.emit(f"✓ 已读取分辨率: {base_name}")
-                elif file_existed:
+                if file_existed:
                     self.log_message.emit(f"▶ 覆盖：{base_name}（轨道{self.track_id}，{sub_format.upper()}格式）")
                 else:
                     self.log_message.emit(f"✓ 成功：{base_name}（轨道{self.track_id}，{sub_format.upper()}格式）")
@@ -291,31 +233,14 @@ class ExtractorWorker(QObject):
         
         # 分析文件名中的现有后缀
         parts = base.split('.')
-        
-        # 检查最后一部分是否是语言后缀
-        if len(parts) > 1 and parts[-1].upper() in ['CHS', 'JP']:
-            existing_suffix = parts[-1].upper()
-            # 如果已有语言后缀与当前选择不同，则替换
-            if existing_suffix != current_suffix:
-                parts[-1] = current_suffix
-                new_base = '.'.join(parts)
-                final_name = f"{new_base}{ext}"
-            else:
-                # 后缀相同，直接使用原文件名
-                final_name = base_name
-        else:
-            # 没有语言后缀，添加新后缀
-            final_name = f"{base}.{current_suffix}{ext}"
-        
-        final_output = None if self._read_only_mode else os.path.join(self.output_dir, final_name)
+        final_name = f"{base}.{current_suffix}{ext}"
+        final_output = os.path.join(self.output_dir, final_name)
         
         try:
-            file_existed = False if self._read_only_mode else os.path.exists(final_output)
+            file_existed = os.path.exists(final_output)
             
             if self.process_ass(ass_path, final_output):
-                if self._read_only_mode:
-                    self.log_message.emit(f"✓ 已读取分辨率: {base_name}")
-                elif file_existed:
+                if file_existed:
                     self.log_message.emit(f"▶ 覆盖：{final_name}")
                 else:
                     if final_name != base_name:

@@ -61,14 +61,6 @@ class SubtitleExtractorTab(QWidget):
         track_layout.addWidget(self.track_id_edit)
         track_layout.addStretch()
 
-        # 字体调整控件
-        fontsize_layout = QHBoxLayout()
-        fontsize_layout.addWidget(QLabel("字体大小调整（+/-数值）："))
-        self.size_adjust_edit = QLineEdit()
-        self.size_adjust_edit.setPlaceholderText("例如：+5 或 -3")
-        self.size_adjust_edit.setMaximumWidth(100)
-        fontsize_layout.addWidget(self.size_adjust_edit)
-        fontsize_layout.addStretch()
 
         # 进度条
         self.progress_bar = QProgressBar()
@@ -109,7 +101,6 @@ class SubtitleExtractorTab(QWidget):
         layout.addLayout(input_layout)
         layout.addLayout(output_layout)
         layout.addLayout(track_layout)
-        layout.addLayout(fontsize_layout)
         layout.addWidget(QLabel("处理进度:"))
         layout.addWidget(self.progress_bar)
         layout.addLayout(btn_layout)
@@ -164,13 +155,6 @@ class SubtitleExtractorTab(QWidget):
             QMessageBox.warning(self, "输入错误", "轨道ID必须是大于等于0的整数！")
             return
 
-        adjust_str = self.size_adjust_edit.text().strip()
-        try:
-            font_adjust = int(adjust_str) if adjust_str else 0
-        except ValueError:
-            QMessageBox.warning(self, "输入错误", "字体调整值必须是整数（如+5或-3）")
-            return
-
         # 单选
         process_mkv = self.mkv_radio.isChecked()
         process_ass = self.ass_radio.isChecked()
@@ -204,14 +188,13 @@ class SubtitleExtractorTab(QWidget):
             return
 
         self.worker_thread = QThread()
-        self.worker = ExtractorWorker(input_dir, output_dir, media_files, font_adjust, track_id, language)
+        self.worker = ExtractorWorker(input_dir, output_dir, media_files, track_id, language)
         
         self.worker.moveToThread(self.worker_thread)
         
         self.worker.progress_updated.connect(self.update_progress)
         self.worker.log_message.connect(self.log_message)
         self.worker.finished.connect(self.on_finished)
-        self.worker.resolution_info.connect(self.update_resolution_info)
         
         self.worker_thread.started.connect(self.worker.run)
         self.worker_thread.start()
@@ -222,8 +205,6 @@ class SubtitleExtractorTab(QWidget):
         self.log_message("=== 开始处理 ===")
         self.log_message(f"选择的语言: {'中文' if language == 'chs' else '日文'}")
         self.log_message(f"使用的轨道ID: {track_id}")
-        if font_adjust != 0:
-            self.log_message(f"字体大小调整量：{font_adjust:+}")
 
     def stop_processing(self):
         if self.worker:
